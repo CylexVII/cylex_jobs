@@ -54,7 +54,7 @@ Citizen.CreateThread(function()
                                     DrawText3D(v.location[i]["coords"], v.location[i].draw3dtext["text"])
                                 end
                                 if IsControlJustPressed(0, 38) and distance <= 1.5 then
-                                    ESX.TriggerServerCallback('cylex_yanmeslekv2:checkCount', function(count)
+                                    ESX.TriggerServerCallback('cylex_jobs:checkCount', function(count)
                                         if v.location[i].item["process"] == "pickup" or count > v.location[i].item["removeCount"]-1 then
                                             if v.location[i].animation["enable"] then
                                                 v.location[i].animation["animationFunction"](ped)
@@ -74,7 +74,7 @@ Citizen.CreateThread(function()
                                                     },
                                                     }, function(status)
                                                     if not status then
-                                                        TriggerServerEvent("cylex_yanmeslekv2:server:process", v.location[i].item)
+                                                        TriggerServerEvent("cylex_jobs:server:process", v.location[i].item)
                                                     else
                                                         exports["mythic_notify"]:SendAlert("error", "Cancelled.")
                                                     end
@@ -83,7 +83,7 @@ Citizen.CreateThread(function()
                                             else
                                                 Citizen.CreateThread(function()
                                                     Citizen.Wait(v.location[i].progressbar["duration"])
-                                                    TriggerServerEvent("cylex_yanmeslekv2:server:process", v.location[i].item)
+                                                    TriggerServerEvent("cylex_jobs:server:process", v.location[i].item)
                                                 end)
                                             end
                                         else
