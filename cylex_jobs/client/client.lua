@@ -74,7 +74,7 @@ Citizen.CreateThread(function()
                                                     },
                                                     }, function(status)
                                                     if not status then
-                                                        TriggerServerEvent("cylex_yanmeslekv2:server:process", v.location[i].item)
+                                                        TriggerServerEvent("cylex_jobs:server:process", v.location[i].item)
                                                     else
                                                         exports["mythic_notify"]:SendAlert("error", "Cancelled.")
                                                     end
@@ -83,7 +83,7 @@ Citizen.CreateThread(function()
                                             else
                                                 Citizen.CreateThread(function()
                                                     Citizen.Wait(v.location[i].progressbar["duration"])
-                                                    TriggerServerEvent("cylex_yanmeslekv2:server:process", v.location[i].item)
+                                                    TriggerServerEvent("cylex_jobs:server:process", v.location[i].item)
                                                 end)
                                             end
                                         else
