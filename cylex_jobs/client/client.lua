@@ -54,7 +54,7 @@ Citizen.CreateThread(function()
                                     DrawText3D(v.location[i]["coords"], v.location[i].draw3dtext["text"])
                                 end
                                 if IsControlJustPressed(0, 38) and distance <= 1.5 then
-                                    ESX.TriggerServerCallback('cylex_yanmeslekv2:checkCount', function(count)
+                                    ESX.TriggerServerCallback('cylex_jobs:checkCount', function(count)
                                         if v.location[i].item["process"] == "pickup" or count > v.location[i].item["removeCount"]-1 then
                                             if v.location[i].animation["enable"] then
                                                 v.location[i].animation["animationFunction"](ped)
