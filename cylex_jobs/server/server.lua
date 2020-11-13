@@ -15,6 +15,7 @@ AddEventHandler("cylex_jobs:server:process", function(location)
         if location.process == "pickup" then
             if player.canCarryItem(location.itemName, location.addCount) then
                 player.addInventoryItem(location.itemName, location.addCount)
+                TriggerClientEvent('mythic_notify:client:SendAlert', player.source, { type = 'inform', text = "You collected "..location.addCount.."x ".. ESX.GetItemLabel(location.itemName)})
             else
                 TriggerClientEvent('mythic_notify:client:SendAlert', player.source, { type = 'error', text = "You reached the weight limit!"})
             end
@@ -23,6 +24,7 @@ AddEventHandler("cylex_jobs:server:process", function(location)
                 if player.canCarryItem(location.itemName, location.addCount) then
                     player.removeInventoryItem(location.requiredItem, location.removeCount)
                     player.addInventoryItem(location.itemName, location.addCount)
+                    TriggerClientEvent('mythic_notify:client:SendAlert', player.source, { type = 'inform', text = "You processed "..location.addCount.."x ".. ESX.GetItemLabel(location.itemName)})
                 else
                     TriggerClientEvent('mythic_notify:client:SendAlert', player.source, { type = 'error', text = "You reached the weight limit!"})
                 end
@@ -34,6 +36,7 @@ AddEventHandler("cylex_jobs:server:process", function(location)
                 if player.canCarryItem(location.itemName, location.addCount) then
                     player.removeInventoryItem(location.requiredItem, location.removeCount)
                     player.addInventoryItem(location.itemName, location.addCount)
+                    TriggerClientEvent('mythic_notify:client:SendAlert', player.source, { type = 'inform', text = "You packaged "..location.addCount.."x ".. ESX.GetItemLabel(location.itemName)})
                 end
             else
                 TriggerClientEvent('mythic_notify:client:SendAlert', player.source, { type = 'error', text = "You don't have enough item!"})
@@ -42,6 +45,7 @@ AddEventHandler("cylex_jobs:server:process", function(location)
             if requiredItem.count >= location.removeCount then
                 player.removeInventoryItem(location.requiredItem, location.removeCount)
                 player.addMoney(location.price)
+                TriggerClientEvent('mythic_notify:client:SendAlert', player.source, { type = 'inform', text = "You selled "..location.removeCount.."x ".. ESX.GetItemLabel(location.requiredItem).. " for $"..location.price})
             else
                 TriggerClientEvent('mythic_notify:client:SendAlert', player.source, { type = 'error', text = "You don't have enough item!"})
             end
@@ -49,7 +53,7 @@ AddEventHandler("cylex_jobs:server:process", function(location)
     else
         TriggerClientEvent('mythic_notify:client:SendAlert', player.source, { type = 'error', text = "An error occurred."})
         print("[cylex_jobs] - ERROR - cylex_jobs:server:process Tried to query an item that isn't included in the 'items' table.") 
-        print("[cylex_jobs] Item must be "..location.itemName)
+        print("[cylex_jobs] Item name must be "..location.itemName)
     end
 end)
 
