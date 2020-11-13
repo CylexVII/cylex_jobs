@@ -83,6 +83,7 @@ Citizen.CreateThread(function()
                                             else
                                                 Citizen.CreateThread(function()
                                                     Citizen.Wait(v.location[i].progressbar["duration"])
+					            ClearPedTasksImmediately(ped)											
                                                     TriggerServerEvent("cylex_jobs:server:process", v.location[i].item)
                                                 end)
                                             end
@@ -117,7 +118,7 @@ function DrawText3D(coords, text)
 end
 
 Citizen.CreateThread(function()
-    local blips = {}
+    local blips = {} -- maybe we will use later
     for k, v in pairs(Jobs) do
         for i = 1, #v.location do
             if v.location[i].blip["showBlip"] then
