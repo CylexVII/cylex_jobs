@@ -11,12 +11,12 @@ Citizen.CreateThread(function()
 end)
 
 AddEventHandler('esx:playerLoaded', function(data)
-	Citizen.Wait(0)
+    Citizen.Wait(0)
     local player = ESX.GetPlayerFromId(data)
     while Jobs == nil do 
         Citizen.Wait(100)
     end
-	TriggerClientEvent("cylex_jobs:client:getJobsData", player.source, Jobs)
+    TriggerClientEvent("cylex_jobs:client:getJobsData", player.source, Jobs)
 end)
 
 RegisterServerEvent("cylex_jobs:server:process")
