@@ -1,6 +1,7 @@
 ESX = nil
 local PlayerData = {}
 local PlayerLoaded = false
+local blips = {}
 Citizen.CreateThread(function()
     while ESX == nil do
         TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
@@ -24,17 +25,19 @@ end)
 RegisterNetEvent('esx:setJob')
 AddEventHandler('esx:setJob', function(job)
     PlayerData.job = job
+    deleteBlips()
+	refreshBlips()
 end)
 
 RegisterNetEvent("cylex_jobs:client:getJobsData")
 AddEventHandler("cylex_jobs:client:getJobsData", function(jobs)
     Jobs = jobs
     Citizen.CreateThread(function()
-        while ESX == nil and Jobs == nil do
+        while ESX == nil and Jobs == nil and PlayerData == nil do
             Citizen.Wait(100)
         end
         main()
-        createBlip()
+        refreshBlips()
     end)
 end)
 
@@ -140,23 +143,43 @@ function DrawText3D(coords, text)
     DrawRect(_x,_y+0.0125, 0.015+ factor, 0.03, 41, 11, 41, 68)
 end
 
-function createBlip()
+function refreshBlips()
     Citizen.CreateThread(function()
-        local blips = {}
         for k, v in pairs(Jobs) do
             for i = 1, #v.location do
                 if v.location[i].blip["showBlip"] then
-                    JobBlip = AddBlipForCoord(v.location[i]["coords"])
-                    SetBlipSprite(JobBlip, v.location[i].blip["sprite"])
-                    SetBlipColour(JobBlip, v.location[i].blip["color"])
-                    SetBlipScale(JobBlip, v.location[i].blip["scale"])
-                    SetBlipAsShortRange(JobBlip, true)
-                    BeginTextCommandSetBlipName("STRING")
-                    AddTextComponentString(v.location[i].blip["blipName"])
-                    EndTextCommandSetBlipName(JobBlip)
-                    table.insert(blips, JobBlip)
+                    if v.jobRequired then
+                        if PlayerData.job.name == v.jobName then
+                            JobBlip = AddBlipForCoord(v.location[i]["coords"])
+                            SetBlipSprite(JobBlip, v.location[i].blip["sprite"])
+                            SetBlipColour(JobBlip, v.location[i].blip["color"])
+                            SetBlipScale(JobBlip, v.location[i].blip["scale"])
+                            SetBlipAsShortRange(JobBlip, true)
+                            BeginTextCommandSetBlipName("STRING")
+                            AddTextComponentString(v.location[i].blip["blipName"])
+                            EndTextCommandSetBlipName(JobBlip)
+                            table.insert(blips, JobBlip)
+                        end
+                    else
+                        JobBlip = AddBlipForCoord(v.location[i]["coords"])
+                        SetBlipSprite(JobBlip, v.location[i].blip["sprite"])
+                        SetBlipColour(JobBlip, v.location[i].blip["color"])
+                        SetBlipScale(JobBlip, v.location[i].blip["scale"])
+                        SetBlipAsShortRange(JobBlip, true)
+                        BeginTextCommandSetBlipName("STRING")
+                        AddTextComponentString(v.location[i].blip["blipName"])
+                        EndTextCommandSetBlipName(JobBlip)
+                        table.insert(blips, JobBlip)
+                    end
                 end
             end
         end
     end)
+end
+
+function deleteBlips()
+	for k,v in ipairs(blips) do
+		RemoveBlip(v)
+		blips[k] = nil
+	end
 end
