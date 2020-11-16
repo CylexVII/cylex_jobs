@@ -75,7 +75,7 @@ AddEventHandler("cylex_jobs:server:process", function(coords, k, v, id)
         end
     else
         print("[cylex_jobs] - WARNING - cylex_jobs:server:process event called without close to the process coords. User Identifier:"..player.identifier)
-        DropPlayer(player.source, "Kicked for using exploit!)
+        DropPlayer(player.source, "Kicked for using exploit!")
     end
 end)
 
