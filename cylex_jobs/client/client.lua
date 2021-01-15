@@ -14,6 +14,11 @@ Citizen.CreateThread(function()
 
     PlayerData = ESX.GetPlayerData()
     PlayerLoaded = true
+    ESX.TriggerServerCallback('cylex_jobs:server:getConfig', function(sConfig)
+        Jobs = sConfig
+        main()
+        refreshBlips()
+    end)
 end)
 
 RegisterNetEvent('esx:playerLoaded')
@@ -27,18 +32,6 @@ AddEventHandler('esx:setJob', function(job)
     PlayerData.job = job
     deleteBlips()
 	refreshBlips()
-end)
-
-RegisterNetEvent("cylex_jobs:client:getJobsData")
-AddEventHandler("cylex_jobs:client:getJobsData", function(jobs)
-    Jobs = jobs
-    Citizen.CreateThread(function()
-        while ESX == nil and Jobs == nil and PlayerData == nil do
-            Citizen.Wait(100)
-        end
-        main()
-        refreshBlips()
-    end)
 end)
 
 RegisterNetEvent("cylex_jobs:client:TriggerAnimation")
