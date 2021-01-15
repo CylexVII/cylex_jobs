@@ -1,22 +1,11 @@
 ESX = nil
 TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
 
-Citizen.CreateThread(function()
-    Citizen.Wait(0)
-    print("^7[^1cylex_jobs^7] - ^2ACTIVE! ^0") 
+ESX.RegisterServerCallback('cylex_jobs:server:getConfig', function(source, cb, itemName) 
     while Jobs == nil do 
         Citizen.Wait(100)
     end
-    TriggerClientEvent("cylex_jobs:client:getJobsData", -1, Jobs) --for restart
-end)
-
-AddEventHandler('esx:playerLoaded', function(data)
-    Citizen.Wait(0)
-    local player = ESX.GetPlayerFromId(data)
-    while Jobs == nil do 
-        Citizen.Wait(100)
-    end
-    TriggerClientEvent("cylex_jobs:client:getJobsData", player.source, Jobs)
+    cb(Jobs)
 end)
 
 RegisterServerEvent("cylex_jobs:server:process")
