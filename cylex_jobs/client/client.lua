@@ -3,22 +3,21 @@ local PlayerData = {}
 local PlayerLoaded = false
 local blips = {}
 Citizen.CreateThread(function()
-    while ESX == nil do
-        TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
-        Citizen.Wait(0)
-    end
-
-    while ESX.GetPlayerData().job == nil do
+    TriggerEvent('esx:getSharedObject', function(obj) 
+        ESX = obj 
+    end)
+    ESX.TriggerServerCallback('cylex_jobs:server:getConfig', function(sConfig)
+        Jobs = sConfig
+    end)
+    while Jobs == nil or ESX.GetPlayerData().job == nil do
 		Citizen.Wait(10)
     end
 
     PlayerData = ESX.GetPlayerData()
     PlayerLoaded = true
-    ESX.TriggerServerCallback('cylex_jobs:server:getConfig', function(sConfig)
-        Jobs = sConfig
-        main()
-        refreshBlips()
-    end)
+
+    main()
+    refreshBlips()
 end)
 
 RegisterNetEvent('esx:playerLoaded')
@@ -34,83 +33,76 @@ AddEventHandler('esx:setJob', function(job)
 	refreshBlips()
 end)
 
-RegisterNetEvent("cylex_jobs:client:TriggerAnimation")
-AddEventHandler("cylex_jobs:client:TriggerAnimation", function(ped, animDict, animName)
-    Citizen.CreateThread(function()
-        RequestAnimDict(animDict) 
-        while not HasAnimDictLoaded(animDict) do Citizen.Wait(10) end
-        TaskPlayAnim(ped, animDict, animName, 8.0, -8, -1, 49, 0, 0, 0, 0)
-    end)
-end)
+
+function TriggerAnimation(ped, animDict, animName)
+    RequestAnimDict(animDict) 
+    while not HasAnimDictLoaded(animDict) do Citizen.Wait(10) end
+    TaskPlayAnim(ped, animDict, animName, 8.0, -8, -1, 49, 0, 0, 0, 0)
+end
 
 function main()
     Citizen.CreateThread(function()
-        local farDistance = 10
         while true do
-            local wait, show = 500, true
+            local wait = 500
             if PlayerLoaded and PlayerData.job ~= nil then
                 local ped = PlayerPedId()
                 local coords = GetEntityCoords(ped)
                 for k, v in pairs(Jobs) do
                     for i=1, #v.location do
+                        local show = true
+                        local distance = #(coords - v.location[i]["coords"])
                         if v.jobRequired then 
                             if PlayerData.job.name ~= v.jobName then
                                 show = false
-                                wait = 500
                             end
                         end                    
                         if show then
-                            local distance = #(coords - v.location[i]["coords"])
-                            if v.location[i].marker["enable"] then
-                                farDistance = 50
-                            end
-                            if distance <= farDistance then  
+                            if v.location[i].marker["enable"] and distance <= v.location[i].marker["farDistance"] then
                                 wait = 5
                                 DrawMarker(v.location[i].marker["type"], v.location[i]["coords"], 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, v.location[i].marker["size"].x, v.location[i].marker["size"].y, v.location[i].marker["size"].z, v.location[i].marker["color"].r, v.location[i].marker["color"].g, v.location[i].marker["color"].b, 100, false, true, 2, false, nil, nil, false)                          
-                                if distance <= 5 then
-                                    if v.location[i].draw3dtext["enable"] then
-                                        DrawText3D(v.location[i]["coords"], v.location[i].draw3dtext["text"])
-                                    end
-                                    if IsControlJustPressed(0, 38) and distance <= 1.5 then
-                                        ESX.TriggerServerCallback('cylex_jobs:checkCount', function(count)
-                                            if v.location[i].item["process"] == "pickup" or count > v.location[i].item["removeCount"]-1 then
-                                                if v.location[i].animation["enable"] then
-                                                    TriggerEvent("cylex_jobs:client:TriggerAnimation", ped, v.location[i].animation["animDict"], v.location[i].animation["animName"])
-                                                end
-                                                if v.location[i].progressbar["enable"] then
-                                                    TriggerEvent("mythic_progbar:client:progress", {
-                                                        name = k.."-"..v.location[i].item["process"],
-                                                        duration = v.location[i].progressbar["duration"],
-                                                        label = v.location[i].progressbar["progText"],
-                                                        useWhileDead = false,
-                                                        canCancel = true,
-                                                        controlDisables = {
-                                                            disableMovement = true,
-                                                            disableCarMovement = false,
-                                                            disableMouse = false,
-                                                            disableCombat = true,
-                                                        },
-                                                        }, function(status)
-                                                        if not status then
-                                                            TriggerServerEvent("cylex_jobs:server:process", coords, k, v, i)
-                                                        else
-                                                            exports["mythic_notify"]:SendAlert("error", "Cancelled.")
-                                                        end
-                                                        ClearPedTasksImmediately(ped)
-                                                    end)
+                            end
+                            if v.location[i].draw3dtext["enable"] and distance <= v.location[i].draw3dtext["distance"] then
+                                wait = 5
+                                DrawText3D(v.location[i]["coords"], v.location[i].draw3dtext["text"])
+                            end
+                            if IsControlJustPressed(0, 38) and distance <= v.location[i].draw3dtext["distance"] then
+                                ESX.TriggerServerCallback('cylex_jobs:checkCount', function(count)
+                                    if v.location[i].item["process"] == "pickup" or count > v.location[i].item["removeCount"]-1 then
+                                        if v.location[i].animation["enable"] then
+                                            TriggerAnimation(ped, v.location[i].animation["animDict"], v.location[i].animation["animName"])
+                                        end
+                                        if v.location[i].progressbar["enable"] then
+                                            TriggerEvent("mythic_progbar:client:progress", {
+                                                name = k.."-"..v.location[i].item["process"],
+                                                duration = v.location[i].progressbar["duration"],
+                                                label = v.location[i].progressbar["progText"],
+                                                useWhileDead = false,
+                                                canCancel = true,
+                                                controlDisables = {
+                                                    disableMovement = true,
+                                                    disableCarMovement = false,
+                                                    disableMouse = false,
+                                                    disableCombat = true,
+                                                },
+                                                }, function(status)
+                                                if not status then
+                                                    TriggerServerEvent("cylex_jobs:server:process", coords, k, v, i)
                                                 else
-                                                    Citizen.CreateThread(function()
-                                                        Citizen.Wait(v.location[i].progressbar["duration"])
-                                                        ClearPedTasksImmediately(ped)
-                                                        TriggerServerEvent("cylex_jobs:server:process", v.location[i].item)
-                                                    end)
+                                                    exports["mythic_notify"]:SendAlert("error", "Cancelled.")
                                                 end
-                                            else
-                                                exports["mythic_notify"]:SendAlert("error", "You don't have enough item!")
-                                            end
-                                        end, v.location[i].item["requiredItem"])
+                                                ClearPedTasksImmediately(ped)
+                                            end)
+                                        else
+                                            Citizen.CreateThread(function()
+                                                Citizen.Wait(v.location[i].progressbar["duration"])
+                                                ClearPedTasksImmediately(ped)
+                                                TriggerServerEvent("cylex_jobs:server:process", v.location[i].item)
+                                            end)
+                                        end
+                                    else
+                                        exports["mythic_notify"]:SendAlert("error", "You don't have enough item!")
                                     end
-                                end
+                                end, v.location[i].item["requiredItem"])
                             end
                         end
                     end
