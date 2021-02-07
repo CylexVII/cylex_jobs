@@ -17,8 +17,16 @@ AddEventHandler("cylex_jobs:server:process", function(coords, k, v, id)
         local item = player.getInventoryItem(jobData.item["itemName"])
         local requiredItem = player.getInventoryItem(jobData.item["requiredItem"])
         if item or jobData.item["process"] == "sell" then
-            if jobData.item["process"] == "pickup" then
+            local retval = false
+            if jobData.item["process"] ~= "sell" and WeightSystem then
                 if player.canCarryItem(jobData.item["itemName"], jobData.item["addCount"]) then
+                    retval = true                        
+                end  
+            else
+                retval = true
+            end
+            if jobData.item["process"] == "pickup" then
+                if retval then
                     player.addInventoryItem(jobData.item["itemName"], jobData.item["addCount"])
                     TriggerClientEvent('mythic_notify:client:SendAlert', player.source, { type = 'inform', text = "You collected "..jobData.item["addCount"].."x ".. ESX.GetItemLabel(jobData.item["itemName"])})
                 else
@@ -26,10 +34,10 @@ AddEventHandler("cylex_jobs:server:process", function(coords, k, v, id)
                 end
             elseif jobData.item["process"] == "exchange" then
                 if requiredItem.count >= jobData.item["removeCount"] then
-                    if player.canCarryItem(jobData.item["itemName"], jobData.item["addCount"]) then
+                    if retval then
                         player.removeInventoryItem(jobData.item["requiredItem"], jobData.item["removeCount"])
-                        player.addInventoryItem(jobData.item["itemName"], jobData.item["addCount"])
                         TriggerClientEvent('mythic_notify:client:SendAlert', player.source, { type = 'inform', text = "You processed "..jobData.item["addCount"].."x ".. ESX.GetItemLabel(jobData.item["itemName"])})
+                        player.addInventoryItem(jobData.item["itemName"], jobData.item["addCount"])
                     else
                         TriggerClientEvent('mythic_notify:client:SendAlert', player.source, { type = 'error', text = "You reached the weight limit!"})
                     end
@@ -38,7 +46,7 @@ AddEventHandler("cylex_jobs:server:process", function(coords, k, v, id)
                 end
             elseif jobData.item["process"] == "package" then
                 if requiredItem.count >= jobData.item["removeCount"] then
-                    if player.canCarryItem(jobData.item["itemName"], jobData.item["addCount"]) then
+                    if retval then
                         player.removeInventoryItem(jobData.item["requiredItem"], jobData.item["removeCount"])
                         player.addInventoryItem(jobData.item["itemName"], jobData.item["addCount"])
                         TriggerClientEvent('mythic_notify:client:SendAlert', player.source, { type = 'inform', text = "You packaged "..jobData.item["addCount"].."x "..ESX.GetItemLabel(jobData.item["itemName"])})
