@@ -19,9 +19,15 @@ AddEventHandler("cylex_jobs:server:process", function(coords, k, v, id)
         if item or jobData.item["process"] == "sell" then
             local retval = false
             if jobData.item["process"] ~= "sell" and WeightSystem then
-                if player.canCarryItem(jobData.item["itemName"], jobData.item["addCount"]) then
-                    retval = true                        
-                end  
+                if jobData.item["process"] == "exchange" or jobData.item["process"] == "package" then
+                    if player.canSwapItem(jobData.item["requiredItem"], jobData.item["removeCount"], jobData.item["itemName"], jobData.item["addCount"]) then
+                        retval = true
+                    end
+                else
+                    if player.canCarryItem(jobData.item["itemName"], jobData.item["addCount"]) then
+                        retval = true                        
+                    end  
+                end
             else
                 retval = true
             end
@@ -75,7 +81,6 @@ AddEventHandler("cylex_jobs:server:process", function(coords, k, v, id)
         DropPlayer(player.source, "Kicked for using exploit!")
     end
 end)
-
 ESX.RegisterServerCallback('cylex_jobs:checkCount', function(source, cb, itemName) 
     local player = ESX.GetPlayerFromId(source)
     local item = player.getInventoryItem(itemName)
